@@ -1,36 +1,48 @@
 async function sendMessage(){
 
-const input = document.getElementById("message")
-const text = input.value
+const input=document.getElementById("msg")
+const message=input.value.trim()
 
-addMessage(text,"user")
+if(!message) return
+
+addMessage(message,"user")
 
 input.value=""
 
-const response = await fetch("/api/chat",{
+try{
+
+const res=await fetch("/api/chat",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({message:text})
+body:JSON.stringify({message})
 })
 
-const data = await response.json()
+const data=await res.json()
 
 addMessage(data.reply,"bot")
+
+}catch(err){
+
+addMessage("Error connecting to AI","bot")
+
+}
 
 }
 
 function addMessage(text,type){
 
-const chat = document.getElementById("chat")
+const chat=document.getElementById("chat")
 
-const msg = document.createElement("div")
-msg.className="message "+type
-msg.innerText=text
+const div=document.createElement("div")
 
-chat.appendChild(msg)
+div.className="message "+type
 
-chat.scrollTop = chat.scrollHeight
+div.innerText=text
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
 
 }
