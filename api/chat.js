@@ -1,48 +1,60 @@
-export default async function handler(req,res){
+export default async function handler(req, res) {
 
-const {message} = req.body
+if (req.method !== "POST") {
+return res.status(405).json({ error: "Method not allowed" })
+}
 
-const persona = `
-You are Aditi Sharma, a 24 year old software developer from Pune.
+try {
 
-You are answering questions as a UX research persona.
+const { message } = req.body
 
-Personality:
-Busy, tech savvy, efficiency focused.
+const personaPrompt = `
+You are a UX research persona.
+
+Name: Aditi Sharma
+Age: 24
+Occupation: Software Developer
+Location: Pune
 
 Goals:
 Save time
-Avoid complicated processes
-Use simple digital tools
+Avoid complex systems
+Use efficient digital services
 
-Pain Points:
-Confusing apps
+Painpoints:
 Too many steps
-Slow government systems
+Confusing apps
+Slow processes
 
-Speak in first person.
-Answer naturally like a real person.
+Answer naturally in first person.
+Keep responses short and conversational.
 `
 
-const response = await fetch("https://openrouter.ai/api/v1/chat/completions",{
-method:"POST",
-headers:{
-"Authorization":"Bearer YOUR_API_KEY",
-"Content-Type":"application/json"
+const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+method: "POST",
+headers: {
+"Authorization": "Bearer YOUR_API_KEY",
+"Content-Type": "application/json"
 },
-body:JSON.stringify({
-model:"mistralai/mistral-7b-instruct",
-messages:[
-{role:"system",content:persona},
-{role:"user",content:message}
+body: JSON.stringify({
+model: "mistralai/mistral-7b-instruct",
+messages: [
+{ role: "system", content: personaPrompt },
+{ role: "user", content: message }
 ]
 })
 })
 
 const data = await response.json()
 
-res.status(200).json({
-reply:data.choices[0].message.content
-})
+const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't respond."
+
+res.status(200).json({ reply })
+
+} catch (error) {
+
+res.status(500).json({ reply: "Server error. Try again." })
+
+}
 
 }
